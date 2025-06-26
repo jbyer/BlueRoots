@@ -171,7 +171,7 @@
   }
 
   .bg-gradient-republican {
-    @apply bg-gradient-to-r from-republican-600 to-republican-800;
+    /* @apply bg-gradient-to-r from-republican-600 to-republican-800; */
   }
 
   .bg-gradient-neutral {
