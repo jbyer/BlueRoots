@@ -28,9 +28,13 @@ interface Campaign {
 
 interface CampaignListProps {
   campaigns: Campaign[];
+  loading: boolean;
 }
 
-export default function CampaignList({ campaigns }: CampaignListProps) {
+export default function CampaignList({
+  campaigns,
+  loading,
+}: CampaignListProps) {
   if (campaigns.length === 0) {
     return (
       <div className="text-center py-12">
