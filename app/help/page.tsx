@@ -9,7 +9,11 @@ import HelpFAQ from "@/components/help-faq"
 import HelpCategories from "@/components/help-categories"
 import HelpContactForm from "@/components/help-contact-form"
 
-// Update the metadata
+// // Update the metadata
+// export const metadata: Metadata = {
+//   title: "Create Campaign - BlueRoot",
+//   description: "Create a new fundraising campaign",
+// }
 export const metadata: Metadata = {
   title: "Help Center - BlueRoot",
   description: "Get help and support for using the BlueRoot platform",
@@ -33,8 +37,7 @@ export default function HelpPage() {
           </div>
         </div>
 
-        {/* Quick Links */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+        {/* Quick Links */}        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {[
             { icon: LifeBuoy, title: "Getting Started", href: "#getting-started" },
             { icon: CreditCard, title: "Donations", href: "#donations" },
