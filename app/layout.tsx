@@ -24,9 +24,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Navbar />
-        <ReduxProvider>
+        {/* <ReduxProvider> */}
           <main className="min-h-screen">{children}</main>
-        </ReduxProvider>
+        {/* </ReduxProvider> */}
 
         <Footer />
       </body>
