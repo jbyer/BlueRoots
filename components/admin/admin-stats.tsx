@@ -34,7 +34,7 @@ export default function AdminStats() {
           <p className="text-xs text-gray-500">+24 new this week</p>
         </CardContent>
       </Card>
-      <Card>
+      {/* <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
           <TrendingUp className="h-4 w-4 text-gray-500" />
@@ -43,7 +43,7 @@ export default function AdminStats() {
           <div className="text-2xl font-bold">3.6%</div>
           <p className="text-xs text-gray-500">+0.8% from last week</p>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   )
 }

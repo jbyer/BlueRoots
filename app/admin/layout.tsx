@@ -1,21 +1,68 @@
-import type React from "react"
-import type { Metadata } from "next"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { LayoutDashboard, FileText, Users, Settings, BarChart3, PlusCircle, LogOut, User } from "lucide-react"
+"use client";
+import type React from "react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  LayoutDashboard,
+  FileText,
+  Users,
+  Settings,
+  BarChart3,
+  PlusCircle,
+  LogOut,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { getAuthToken, logout } from "@/lib/auth";
 
 // Update the metadata
-export const metadata: Metadata = {
-  title: "Admin Dashboard - BlueRoot",
-  description: "Manage your fundraising campaigns and account settings",
-}
+// export const metadata: Metadata = {
+//   title: "Admin Dashboard - BlueRoot",
+//   description: "Manage your fundraising campaigns and account settings",
+// };
 
 export default function AdminLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
+  const [token, setToken] = useState<string | null | undefined>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  useEffect(() => {
+    const token = getAuthToken();
+    setToken(token);
+    setIsLoading(false);
+  }, []);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+      setIsLoggingOut(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (!token) {
+    window.location.href = "/login";
+    return <div>Redirecting to login...</div>;
+  }
+  // else {
+  //   window.history.replaceState({}, "", "/admin");
+  // }
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -28,14 +75,23 @@ export default function AdminLayout({
               </span>
             </Link>
             <nav className="flex items-center space-x-6 text-sm font-medium">
-              <Link href="/admin" className="transition-colors hover:text-foreground/80 text-foreground">
+              <Link
+                href="/admin"
+                className="transition-colors hover:text-foreground/80 text-foreground"
+              >
                 Dashboard
               </Link>
-              <Link href="/admin/campaigns" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              <Link
+                href="/admin/campaigns"
+                className="transition-colors hover:text-foreground/80 text-foreground/60"
+              >
                 Campaigns
               </Link>
-              
-              <Link href="/admin/reports" className="transition-colors hover:text-foreground/80 text-foreground/60">
+
+              <Link
+                href="/admin/reports"
+                className="transition-colors hover:text-foreground/80 text-foreground/60"
+              >
                 Reports
               </Link>
             </nav>
@@ -47,11 +103,23 @@ export default function AdminLayout({
                 New Campaign
               </Link>
             </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/login">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? (
+                <>
+                  <LogOut className="mr-2 h-4 w-4 animate-pulse" />
+                  Signing Out...
+                </>
+              ) : (
+                <>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -71,7 +139,7 @@ export default function AdminLayout({
                 Campaigns
               </Button>
             </Link>
-            
+
             <Link href="/admin/analytics">
               <Button variant="ghost" className="w-full justify-start">
                 <BarChart3 className="mr-2 h-4 w-4" />
@@ -98,8 +166,10 @@ export default function AdminLayout({
             </Link>
           </nav>
         </aside>
-        <main className="flex w-full flex-1 flex-col overflow-hidden">{children}</main>
+        <main className="flex w-full flex-1 flex-col overflow-hidden">
+          {children}
+        </main>
       </div>
     </div>
-  )
+  );
 }

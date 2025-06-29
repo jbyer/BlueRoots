@@ -7,16 +7,18 @@ import { useEffect, useState } from "react"
 import api from "@/utils/api"
 
 interface Campaign {
-  id: number
-  title: string
-  description: string
-  photo: string
-  end_date: string
-  amount_donated: number
-  goal: number
-  email: string
-  createdAt: string
-  updatedAt: string
+  id: number;
+  title: string;
+  description: string;
+  photo: string;
+  end_date: string;
+  amount_donated: number;
+  goal: number;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+  supporter: number;
+  status: string;
 }
 
 const causeIcons = {
@@ -60,9 +62,11 @@ const getUrgency = (endDate: string, goal: number, donated: number) => {
 
 const getUrgencyColor = (urgency: string) => {
   switch (urgency) {
-    case "Critical": return "bg-red-100 text-red-800"
-    case "High": return "bg-orange-100 text-orange-800"
-    case "Medium": return "bg-yellow-100 text-yellow-800"
+    case "critical": return "bg-red-100 text-red-800"
+    case "urgent": return "bg-red-100 text-red-800"
+    case "high": return "bg-orange-100 text-orange-800"
+    case "medium": return "bg-yellow-100 text-yellow-800"
+    case "active": return "bg-green-100 text-green-800"
     default: return "bg-gray-100 text-gray-800"
   }
 }
@@ -77,8 +81,7 @@ export default function FeaturedCauses() {
       try {
         setLoading(true)
         const response = await api.get('/api/v1/all_campaign')
-        setCauses(response.campaigns)
-
+        setCauses(response.campaigns.slice(0, 6));
       } catch (err: any) {
         setError(err.message || 'Failed to fetch causes')
         console.error('Error fetching causes:', err)
@@ -137,27 +140,42 @@ export default function FeaturedCauses() {
         const causeType = getCauseType(cause.title)
         const IconComponent = causeIcons[causeType] || causeIcons.Default
         const progressPercentage = (cause.amount_donated / cause.goal) * 100
-        const urgency = getUrgency(cause.end_date, cause.goal, cause.amount_donated)
-        const supporters = Math.max(1, Math.floor(cause.amount_donated / 100)) // Estimate supporters
+        const urgency = cause?.status
+        const supporters = cause.supporter;
 
         return (
-          <Card key={cause.id} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <Card
+            key={cause.id}
+            className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+          >
             <CardContent className="p-6">
               <div className="space-y-4">
                 {/* Icon and Urgency Badge */}
                 <div className="flex items-center justify-between">
-                  <div className={`w-12 h-12 bg-gradient-to-r ${causeColors[causeType] || causeColors.Default} rounded-lg flex items-center justify-center`}>
+                  <div
+                    className={`w-12 h-12 bg-gradient-to-r ${
+                      causeColors[causeType] || causeColors.Default
+                    } rounded-lg flex items-center justify-center`}
+                  >
                     <IconComponent className="h-6 w-6 text-white" />
                   </div>
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${getUrgencyColor(urgency)}`}>
-                    {urgency}
+                  <span
+                    className={`text-xs font-medium px-2 py-1 rounded-full ${getUrgencyColor(
+                      urgency
+                    )}`}
+                  >
+                    {cause.status.charAt(0).toUpperCase() + cause.status.slice(1)}
                   </span>
                 </div>
 
                 {/* Title and Description */}
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{cause.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{cause.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {cause.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {cause.description}
+                  </p>
                 </div>
 
                 {/* Progress Section */}
@@ -166,7 +184,8 @@ export default function FeaturedCauses() {
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-gray-600">Progress</span>
                       <span className="font-medium">
-                        ${cause.amount_donated.toLocaleString()} of ${cause.goal.toLocaleString()}
+                        ${cause.amount_donated.toLocaleString()} of $
+                        {cause.goal.toLocaleString()}
                       </span>
                     </div>
                     <Progress value={progressPercentage} className="h-2" />
@@ -182,15 +201,22 @@ export default function FeaturedCauses() {
                       {supporters.toLocaleString()} supporters
                     </div>
                     <div className="flex items-center">
-                      <DollarSign className="h-4 w-4 mr-1" />$
-                      {Math.round(cause.amount_donated / supporters).toLocaleString()} avg
+                      <DollarSign className="h-4 w-4 mr-1" />
+                      {supporters > 0
+                        ? Math.round(
+                            cause.amount_donated / supporters
+                          ).toLocaleString()
+                        : "0"}{" "}
+                      avg
                     </div>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 pt-2">
-                  <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm">Support Cause</Button>
+                  <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm">
+                    Support Cause
+                  </Button>
                   <Button variant="outline" className="flex-1 text-sm">
                     Learn More
                   </Button>
@@ -198,7 +224,7 @@ export default function FeaturedCauses() {
               </div>
             </CardContent>
           </Card>
-        )
+        );
       })}
     </div>
   )

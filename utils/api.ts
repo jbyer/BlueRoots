@@ -1,4 +1,5 @@
 // utils/api.ts
+import { getAuthToken } from "@/lib/auth";
 import axios from "axios";
 
 const api = axios.create({
@@ -12,13 +13,10 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem("authToken"); // or from cookies
+    const token = getAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
-    // You can add loading state management here if needed
     return config;
   },
   (error) => {
@@ -29,7 +27,6 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
-    // You can modify the response structure here
     return response.data;
   },
   (error) => {

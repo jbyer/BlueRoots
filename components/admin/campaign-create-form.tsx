@@ -1,27 +1,48 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
 import api from "@/utils/api";
+import toast, { Toaster } from "react-hot-toast";
+import { getUserData } from "@/lib/auth";
+
+
+const statusOptions = [
+  { value: "critical", label: "Critical" },
+  { value: "urgent", label: "Urgent" },
+  { value: "active", label: "Active" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+];
 
 export default function CampaignCreateForm() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("edit");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState(null);
+  const email = user?.email || ""
+  console.log("User email:", email);
+  
+  
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     goal: "",
     end_date: "",
     photo: "",
-    email: "olamide@gmail.com", // Default email as per your API
+    email,
+    status: "active",
   });
+  useEffect(() => {
+    setUser(getUserData());
+  }, []);
+
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -50,14 +71,15 @@ export default function CampaignCreateForm() {
         goal: Number(formData.goal),
         end_date: new Date(formData.end_date).toISOString(),
         photo: formData.photo || "campaign.png", // Default image if none provided
-        email: formData.email,
+        email,
+        status: formData.status,
       };
 
       // Make API call
       const response = await api.post("/api/v1/create_campaign", payload);
 
       console.log("Campaign created:", response);
-      alert("Campaign created successfully!");
+      toast.success("Campaign created successfully!");
 
       // Reset form
       setFormData({
@@ -66,14 +88,15 @@ export default function CampaignCreateForm() {
         goal: "",
         end_date: "",
         photo: "",
-        email: "olamide@gmail.com",
+        email: "",
+        status: "active",
       });
 
       // Optionally redirect to campaigns list
-      router.push("/fundraisers");
+      router.push("/admin");
     } catch (err: any) {
       console.error("Error creating campaign:", err);
-      setError(err.message || "Failed to create campaign");
+      toast.error("Failed to create campaign!");
     } finally {
       setIsSubmitting(false);
     }
@@ -192,6 +215,34 @@ export default function CampaignCreateForm() {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Campaign Status *
+            </label>
+            <div className="flex flex-wrap gap-4">
+              {statusOptions.map((option) => (
+                <div key={option.value} className="flex items-center">
+                  <input
+                    type="radio"
+                    id={`status-${option.value}`}
+                    name="status"
+                    value={option.value}
+                    checked={formData.status === option.value}
+                    onChange={() => handleInputChange("status", option.value)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    required
+                  />
+                  <label
+                    htmlFor={`status-${option.value}`}
+                    className="ml-2 block text-sm text-gray-700"
+                  >
+                    {option.label}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="flex justify-between">
             <Button
               type="button"
@@ -204,6 +255,7 @@ export default function CampaignCreateForm() {
                   end_date: "",
                   photo: "",
                   email: "olamide@gmail.com",
+                  status: "active",
                 })
               }
             >
@@ -247,6 +299,11 @@ export default function CampaignCreateForm() {
             </h3>
             <p className="text-gray-600 mb-4">
               {formData.description || "Campaign description will appear here."}
+            </p>
+            <p className="text-sm text-gray-600">
+              Status:{" "}
+              {formData.status.charAt(0).toUpperCase() +
+                formData.status.slice(1)}
             </p>
             <div className="space-y-2">
               <p className="text-lg font-semibold">

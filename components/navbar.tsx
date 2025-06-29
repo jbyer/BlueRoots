@@ -1,14 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
+import { getAuthToken } from "@/lib/auth"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  
+  
+    
 
   return (
+ 
     <nav className="bg-gray-900 border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24">

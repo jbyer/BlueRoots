@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import api from "@/utils/api";
+import { getUserData } from "@/lib/auth";
 
 interface CampaignEditModalProps {
   campaign: {
@@ -36,15 +37,23 @@ export function CampaignEditModal({
   onSuccess,
 }: CampaignEditModalProps) {
   const { toast } = useToast();
+  const [user, setUser] = useState(null);
+  const email = user?.email || "";
+  console.log("User email:", email);
+
   const [formData, setFormData] = useState({
     title: campaign.title,
     description: campaign.description,
     goal: campaign.goal.toString(),
     end_date: new Date(campaign.end_date).toISOString().split("T")[0],
     photo: campaign.photo,
-    email: campaign.email,
+    email
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setUser(getUserData());
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -54,7 +63,7 @@ export function CampaignEditModal({
         goal: campaign.goal.toString(),
         end_date: new Date(campaign.end_date).toISOString().split("T")[0],
         photo: campaign.photo,
-        email: campaign.email,
+        email
       });
     }
   }, [open, campaign]);
@@ -74,7 +83,7 @@ export function CampaignEditModal({
         goal: Number(formData.goal),
         end_date: new Date(formData.end_date).getFullYear().toString(), // Convert to just year
         photo: formData.photo,
-        email: formData.email,
+        email
       };
 
       await api.put(`/api/v1/update_campaign/${campaign.id}`, payload);

@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
+import api from "@/utils/api";
+import toast, { Toaster } from "react-hot-toast";
 
 interface LoginFormProps {
   mode: "signin" | "signup";
@@ -43,39 +46,61 @@ export default function LoginForm({ mode }: LoginFormProps) {
     }, 1500);
   };
 
-  const handleGoogleSuccess = (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: any) => {
     setGoogleLoading(true);
     try {
       const decoded: {
         name: string;
-        given_name: string;
-        family_name: string;
         email: string;
         picture: string;
-      } =  jwtDecode(credentialResponse.credential);
+      } = jwtDecode(credentialResponse.credential);
 
-      console.log("Google Auth Success", decoded);
+      // Prepare the payload for your API
+      const payload = {
+        name: decoded.name,
+        email: decoded.email,
+        picture: decoded.picture,
+      };
+      console.log("Decoded Google token:", payload);
 
-      // Here you would typically send the credential to your backend
-      // fetch('/api/auth/google', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ token: credentialResponse.credential })
-      // })
+      // Make API call to your endpoint
+      const response = await api.post("/api/v1/auth_login", payload);
 
-      // For demo, just redirect after a short delay
-      setTimeout(() => {
-        setGoogleLoading(false);
-        router.push("/");
-      }, 1000);
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error("Login failed");
+      }
+
+      const data = response;
+      console.log("Login successful", data);
+
+      Cookies.set("token", data.token, {
+        expires: 7,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+
+      // Store user data if needed
+      Cookies.set("user", JSON.stringify(data.user), {
+        expires: 7,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+
+      // Redirect after successful login
+      router.push("/admin");
+      toast.success("Google login successful!");
     } catch (error) {
-      console.error("Error decoding token", error);
+      console.error("Error during Google login", error);
+      toast.error("Google login failed. Please try again.");
+
+      // Handle error (show toast, etc.)
+    } finally {
       setGoogleLoading(false);
     }
   };
 
   const handleGoogleError = () => {
-    console.log("Google Login Failed");
+    toast.error("Google login failed. Please try again.");
     setGoogleLoading(false);
   };
 

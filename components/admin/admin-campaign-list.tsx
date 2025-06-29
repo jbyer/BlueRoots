@@ -20,6 +20,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { CampaignEditModal } from "./admin-edit-campanign";
+import { getUserData } from "@/lib/auth";
+import toast, { Toaster } from "react-hot-toast";
+
 
 interface Campaign {
   id: number;
@@ -43,14 +46,20 @@ export default function AdminCampaignList() {
   const [campaignToDelete, setCampaignToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [user, setUser] = useState(null);
+  const email = user?.email || "";
+
+  useEffect(() => {
+    setUser(getUserData());
+  }, []);
 
   const fetchCampaigns = async () => {
     try {
       setLoading(true);
-      const response = await api.get(
-        "/api/v1/all_campaign/olamide@gmail.com"
-      );
+      const response = await api.get(`/api/v1/all_campaign/${email}`);
       setCampaigns(response.campaigns);
+      console.log("Fetched campaigns:", response.campaigns);
+      
     } catch (err: any) {
       setError(err.message || "Failed to fetch campaigns");
       console.error("Error fetching campaigns:", err);
@@ -76,10 +85,11 @@ export default function AdminCampaignList() {
       await api.delete(`/api/v1/delete_campaign/${campaignToDelete}`);
 
       // Refresh the campaigns list
-      const response = await api.get("/api/v1/all_campaign/olamide@gmail.com");
+      const response = await api.get(`/api/v1/all_campaign/${email}`);
       setCampaigns(response.campaigns);
 
       setDeleteDialogOpen(false);
+      toast.success("Campaign deleted successfully!");
     } catch (err: any) {
       setError(err.message || "Failed to delete campaign");
       console.error("Error deleting campaign:", err);
@@ -132,8 +142,8 @@ export default function AdminCampaignList() {
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={() => window.location.reload()}>Retry</Button>
+        <p className="text-black mb-4">{error}</p>
+        {/* <Button onClick={() => window.location.reload()}>Retry</Button> */}
       </div>
     );
   }
@@ -197,13 +207,13 @@ export default function AdminCampaignList() {
                         >
                           <Edit className="h-4 w-4 mr-1" /> Edit
                         </Button>
-                        <Button asChild variant="outline" size="sm">
+                        {/* <Button asChild variant="outline" size="sm">
                           <Link
                             href={`/admin/campaigns/${campaign.id}/analytics`}
                           >
                             <BarChart3 className="h-4 w-4 mr-1" /> Analytics
                           </Link>
-                        </Button>
+                        </Button> */}
                         <Button
                           variant="outline"
                           size="sm"
