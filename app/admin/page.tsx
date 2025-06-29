@@ -16,16 +16,16 @@ import { getAuthToken, getUserData } from "@/lib/auth";
 import { useEffect, useState } from "react";
 
 export default function AdminDashboardPage() {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState<string | null | undefined>(null);
+  // const [user, setUser] = useState(null);
+  // const [token, setToken] = useState<string | null | undefined>(null);
 
-  useEffect(() => {
-    setUser(getUserData());
-    setToken(getAuthToken());
-  }, []);
+  // useEffect(() => {
+  //   setUser(getUserData());
+  //   setToken(getAuthToken());
+  // }, []);
 
-  console.log("User data:", user);
-  console.log("User token:", token);
+  // console.log("User data:", user);
+  // console.log("User token:", token);
 
 
   return (
