@@ -45,43 +45,43 @@ export default function AdminDashboardPage() {
       </div>
 
       <AdminStats />
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="col-span-1 md:col-span-3">
-          <CardHeader className="pb-3">
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Latest donations and campaign updates
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-4 p-3 bg-gray-50 rounded-md"
-                >
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <div>
-                    <p className="font-medium">New donation received</p>
-                    <p className="text-sm text-gray-500">
-                      $50.00 from John Doe to Campaign for Education
-                    </p>
+      {/*
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="col-span-1 md:col-span-3">
+            <CardHeader className="pb-3">
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>
+                Latest donations and campaign updates
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-4 p-3 bg-gray-50 rounded-md"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <div>
+                      <p className="font-medium">New donation received</p>
+                      <p className="text-sm text-gray-500">
+                        $50.00 from John Doe to Campaign for Education
+                      </p>
+                    </div>
+                    <div className="ml-auto text-sm text-gray-500">
+                      2 hours ago
+                    </div>
                   </div>
-                  <div className="ml-auto text-sm text-gray-500">
-                    2 hours ago
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button asChild variant="link" className="ml-auto">
-              <Link href="/admin/activity">View all activity</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button asChild variant="link" className="ml-auto">
+                <Link href="/admin/activity">View all activity</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>*/}
 
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-4">Your Campaigns</h2>

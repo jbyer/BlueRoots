@@ -1,10 +1,20 @@
-"use client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Leaf, Heart, GraduationCap, Scale, Home, Vote, Users, DollarSign } from "lucide-react"
-import { useEffect, useState } from "react"
-import api from "@/utils/api"
+"use client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import {
+  Leaf,
+  Heart,
+  GraduationCap,
+  Scale,
+  Home,
+  Vote,
+  Users,
+  DollarSign,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import api from "@/utils/api";
+import Link from "next/link";
 
 interface Campaign {
   id: number;
@@ -22,76 +32,86 @@ interface Campaign {
 }
 
 const causeIcons = {
-  "Climate": Leaf,
-  "Health": Heart,
-  "Education": GraduationCap,
-  "Justice": Scale,
-  "Housing": Home,
-  "Voting": Vote,
-  "Default": Users
-}
+  Climate: Leaf,
+  Health: Heart,
+  Education: GraduationCap,
+  Justice: Scale,
+  Housing: Home,
+  Voting: Vote,
+  Default: Users,
+};
 
 const causeColors = {
-  "Climate": "from-green-500 to-green-600",
-  "Health": "from-red-500 to-red-600",
-  "Education": "from-blue-500 to-blue-600",
-  "Justice": "from-purple-500 to-purple-600",
-  "Housing": "from-orange-500 to-orange-600",
-  "Voting": "from-indigo-500 to-indigo-600",
-  "Default": "from-gray-500 to-gray-600"
-}
+  Climate: "from-green-500 to-green-600",
+  Health: "from-red-500 to-red-600",
+  Education: "from-blue-500 to-blue-600",
+  Justice: "from-purple-500 to-purple-600",
+  Housing: "from-orange-500 to-orange-600",
+  Voting: "from-indigo-500 to-indigo-600",
+  Default: "from-gray-500 to-gray-600",
+};
 
 const getCauseType = (title: string) => {
-  if (title.includes("Climate") || title.includes("Environment")) return "Climate"
-  if (title.includes("Health") || title.includes("Care")) return "Health"
-  if (title.includes("Education") || title.includes("School")) return "Education"
-  if (title.includes("Justice") || title.includes("Reform")) return "Justice"
-  if (title.includes("Housing") || title.includes("Home")) return "Housing"
-  if (title.includes("Voting") || title.includes("Democracy")) return "Voting"
-  return "Default"
-}
+  if (title.includes("Climate") || title.includes("Environment"))
+    return "Climate";
+  if (title.includes("Health") || title.includes("Care")) return "Health";
+  if (title.includes("Education") || title.includes("School"))
+    return "Education";
+  if (title.includes("Justice") || title.includes("Reform")) return "Justice";
+  if (title.includes("Housing") || title.includes("Home")) return "Housing";
+  if (title.includes("Voting") || title.includes("Democracy")) return "Voting";
+  return "Default";
+};
 
 const getUrgency = (endDate: string, goal: number, donated: number) => {
-  const daysLeft = Math.ceil((new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-  const progress = donated / goal
+  const daysLeft = Math.ceil(
+    (new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  );
+  const progress = donated / goal;
 
-  if (daysLeft < 7 || progress < 0.2) return "Critical"
-  if (daysLeft < 14 || progress < 0.5) return "High"
-  return "Medium"
-}
+  if (daysLeft < 7 || progress < 0.2) return "Critical";
+  if (daysLeft < 14 || progress < 0.5) return "High";
+  return "Medium";
+};
 
 const getUrgencyColor = (urgency: string) => {
   switch (urgency) {
-    case "critical": return "bg-red-100 text-red-800"
-    case "urgent": return "bg-red-100 text-red-800"
-    case "high": return "bg-orange-100 text-orange-800"
-    case "medium": return "bg-yellow-100 text-yellow-800"
-    case "active": return "bg-green-100 text-green-800"
-    default: return "bg-gray-100 text-gray-800"
+    case "critical":
+      return "bg-red-100 text-red-800";
+    case "urgent":
+      return "bg-red-100 text-red-800";
+    case "high":
+      return "bg-orange-100 text-orange-800";
+    case "medium":
+      return "bg-yellow-100 text-yellow-800";
+    case "active":
+      return "bg-green-100 text-green-800";
+    default:
+      return "bg-gray-100 text-gray-800";
   }
-}
+};
 
 export default function FeaturedCauses() {
-  const [causes, setCauses] = useState<Campaign[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [causes, setCauses] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCauses = async () => {
       try {
-        setLoading(true)
-        const response = await api.get('/api/v1/all_campaign')
+        setLoading(true);
+        const response = await api.get("/api/v1/all_campaign");
         setCauses(response.campaigns.slice(0, 6));
       } catch (err: any) {
-        setError(err.message || 'Failed to fetch causes')
-        console.error('Error fetching causes:', err)
+        setError(err.message || "Failed to fetch causes");
+        console.error("Error fetching causes:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchCauses()
-  }, [])
+    fetchCauses();
+  }, []);
 
   if (loading) {
     return (
@@ -114,16 +134,16 @@ export default function FeaturedCauses() {
           </Card>
         ))}
       </div>
-    )
+    );
   }
 
   if (error) {
     return (
       <div className="text-center py-8">
         <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={() => window.location.reload()}>Retry</Button>
+        {/* <Button onClick={() => window.location.reload()}>Retry</Button> */}
       </div>
-    )
+    );
   }
 
   if (causes.length === 0) {
@@ -131,16 +151,16 @@ export default function FeaturedCauses() {
       <div className="text-center py-8">
         <p>No featured causes found</p>
       </div>
-    )
+    );
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {causes.map((cause) => {
-        const causeType = getCauseType(cause.title)
-        const IconComponent = causeIcons[causeType] || causeIcons.Default
-        const progressPercentage = (cause.amount_donated / cause.goal) * 100
-        const urgency = cause?.status
+        const causeType = getCauseType(cause.title);
+        const IconComponent = causeIcons[causeType] || causeIcons.Default;
+        const progressPercentage = (cause.amount_donated / cause.goal) * 100;
+        const urgency = cause?.status;
         const supporters = cause.supporter;
 
         return (
@@ -164,7 +184,8 @@ export default function FeaturedCauses() {
                       urgency
                     )}`}
                   >
-                    {cause.status.charAt(0).toUpperCase() + cause.status.slice(1)}
+                    {cause.status.charAt(0).toUpperCase() +
+                      cause.status.slice(1)}
                   </span>
                 </div>
 
@@ -214,9 +235,11 @@ export default function FeaturedCauses() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 pt-2">
-                  <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm">
-                    Support Cause
-                  </Button>
+                  <Link href={`/donate`}>
+                    <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm">
+                      Donate Cause
+                    </Button>
+                  </Link>
                   <Button variant="outline" className="flex-1 text-sm">
                     Learn More
                   </Button>
@@ -227,5 +250,5 @@ export default function FeaturedCauses() {
         );
       })}
     </div>
-  )
+  );
 }

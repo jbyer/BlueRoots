@@ -57,8 +57,8 @@ export default function AdminCampaignList() {
     try {
       setLoading(true);
       const response = await api.get(`/api/v1/all_campaign/${email}`);
-      setCampaigns(response.campaigns);
-      console.log("Fetched campaigns:", response.campaigns);
+      setCampaigns(response?.campaigns);
+      console.log("Fetched campaigns:", response?.campaigns);
       
     } catch (err: any) {
       setError(err.message || "Failed to fetch campaigns");

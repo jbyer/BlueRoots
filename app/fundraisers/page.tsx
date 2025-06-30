@@ -35,6 +35,8 @@ export default function FundraisersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
+  const [currentPage, setCurrentPage] = useState(1);
+  const campaignsPerPage = 6;
 
   useEffect(() => {
     const fetchCampaigns = async () => {
@@ -93,6 +95,24 @@ export default function FundraisersPage() {
     );
   }
 
+  // Calculate pagination data
+  const totalCampaigns = filteredCampaigns.length;
+  const totalPages = Math.ceil(totalCampaigns / campaignsPerPage);
+  const indexOfLastCampaign = currentPage * campaignsPerPage;
+  const indexOfFirstCampaign = indexOfLastCampaign - campaignsPerPage;
+  const currentCampaigns = filteredCampaigns.slice(
+    indexOfFirstCampaign,
+    indexOfLastCampaign
+  );
+
+  // Change page handler
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  console.log("Current campaigns:", currentCampaigns);
+  
+
+
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-6xl mx-auto">
@@ -102,7 +122,6 @@ export default function FundraisersPage() {
         <p className="text-gray-600 mb-8">
           Browse and support ongoing political campaigns and causes.
         </p>
-
         {/* Search and Filter - Show skeleton when loading */}
         <div className="bg-gradient-light p-6 rounded-lg mb-8 shadow-md animate-fade-in">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -151,41 +170,54 @@ export default function FundraisersPage() {
             )}
           </div>
         </div>
-
         {/* Campaign List - Loading state handled by CampaignList component */}
         <div className="animate-slide-in">
-          <CampaignList campaigns={filteredCampaigns} loading={loading} />
+          <CampaignList campaigns={currentCampaigns} loading={loading} />;
         </div>
-
         {/* Pagination - Show skeleton when loading */}
-        {loading ? (
+        {!loading && totalCampaigns > 0 && (
           <div className="flex justify-center mt-8">
             <div className="flex space-x-2">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-9 w-9 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="flex justify-center mt-8">
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm" disabled>
-                Previous
-              </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-neutral-100 border-neutral-300 text-neutral-700"
+                onClick={() => paginate(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
               >
-                1
+                Previous
               </Button>
-              <Button variant="outline" size="sm">
-                2
-              </Button>
-              <Button variant="outline" size="sm">
-                3
-              </Button>
-              <Button variant="outline" size="sm">
+
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                // Show up to 5 page buttons, centered around current page
+                let pageNumber;
+                if (totalPages <= 5) {
+                  pageNumber = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNumber = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNumber = totalPages - 4 + i;
+                } else {
+                  pageNumber = currentPage - 2 + i;
+                }
+
+                return (
+                  <Button
+                    key={pageNumber}
+                    variant={currentPage === pageNumber ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => paginate(pageNumber)}
+                  >
+                    {pageNumber}
+                  </Button>
+                );
+              })}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+              >
                 Next
               </Button>
             </div>
