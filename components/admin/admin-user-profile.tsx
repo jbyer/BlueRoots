@@ -38,6 +38,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { getUserData } from "@/lib/auth";
+import api from "@/utils/api";
+import { toast } from "@/hooks/use-toast";
 
 export function AdminUserProfile() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -60,7 +62,76 @@ export function AdminUserProfile() {
   });
   const [user, setUser] = useState(null);
   const picture = user?.picture || "/placeholder.svg?height=80&width=80";
+  const email = user?.email;
 
+  const [loading, setLoading] = useState(true);
+
+  const [notificationSettings, setNotificationSettings] = useState({
+    email_notification: true,
+    campaign_update: true,
+    donation_alert: true,
+    push_notification: true, // Add this for push notifications
+    push_campaign_update: true, // Add this for push campaign updates
+    push_donation_alert: true, // Add this for push donation alerts
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userData = getUserData();
+        setUser(userData);
+
+        if (userData?.email) {
+          const response = await api.get(`/api/v1/settings/${userData.email}`);
+          
+          setNotificationSettings({
+            email_notification: response.email_notification,
+            campaign_update: response.campaign_update,
+            donation_alert: response.donation_alert,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load notification settings",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleNotificationToggle = async (field: string, value: boolean) => {
+    try {
+      if (!user?.email) return;
+
+      // Optimistic UI update
+      setNotificationSettings((prev) => ({ ...prev, [field]: value }));
+
+      // API call to update settings - we'll send only the changed field
+      await api.patch(`/api/v1/settings/${user.email}`, {
+        [field]: value,
+      });
+
+      toast({
+        title: "Success",
+        description: "Notification settings updated",
+      });
+    } catch (error) {
+      // Revert on error
+      setNotificationSettings((prev) => ({ ...prev, [field]: !value }));
+      toast({
+        title: "Error",
+        description: "Failed to update settings",
+        variant: "destructive",
+      });
+    }
+  };
+  
   useEffect(() => {
     setUser(getUserData());
   }, []);
@@ -124,10 +195,7 @@ export function AdminUserProfile() {
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage
-                      src={picture}
-                      alt="Profile Picture"
-                    />
+                    <AvatarImage src={picture} alt="Profile Picture" />
                     <AvatarFallback className="text-lg">SJ</AvatarFallback>
                   </Avatar>
                   {/* <div className="space-y-2">
@@ -389,7 +457,6 @@ export function AdminUserProfile() {
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="notifications" className="space-y-4">
           <Card>
             <CardHeader>
@@ -402,101 +469,140 @@ export function AdminUserProfile() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Email Notifications</h4>
+              {loading ? (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Campaign Updates</p>
-                      <p className="text-sm text-muted-foreground">
-                        New campaigns and status changes
-                      </p>
+                  {[1, 2, 3, 4, 5, 6].map((item) => (
+                    <div
+                      key={item}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="space-y-2">
+                        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                        <div className="h-3 w-48 bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                      <div className="h-6 w-11 bg-gray-200 rounded-full animate-pulse"></div>
                     </div>
-                    <Switch
-                      checked={notifications.emailCampaigns}
-                      onCheckedChange={(checked) =>
-                        handleNotificationUpdate("emailCampaigns", checked)
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Donation Alerts</p>
-                      <p className="text-sm text-muted-foreground">
-                        New donations and milestones
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notifications.emailDonations}
-                      onCheckedChange={(checked) =>
-                        handleNotificationUpdate("emailDonations", checked)
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Weekly Reports</p>
-                      <p className="text-sm text-muted-foreground">
-                        Performance summaries and analytics
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notifications.emailReports}
-                      onCheckedChange={(checked) =>
-                        handleNotificationUpdate("emailReports", checked)
-                      }
-                    />
-                  </div>
+                  ))}
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Email Notifications</h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">
+                            Email Notifications
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Enable all email notifications
+                          </p>
+                        </div>
+                        <Switch
+                          checked={notificationSettings.email_notification}
+                          onCheckedChange={(checked) =>
+                            handleNotificationToggle(
+                              "email_notification",
+                              checked
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">
+                            Campaign Updates
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            New campaigns and status changes
+                          </p>
+                        </div>
+                        <Switch
+                          checked={notificationSettings.campaign_update}
+                          onCheckedChange={(checked) =>
+                            handleNotificationToggle("campaign_update", checked)
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Donation Alerts</p>
+                          <p className="text-sm text-muted-foreground">
+                            New donations and milestones
+                          </p>
+                        </div>
+                        <Switch
+                          checked={notificationSettings.donation_alert}
+                          onCheckedChange={(checked) =>
+                            handleNotificationToggle("donation_alert", checked)
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Push Notifications</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Campaign Updates</p>
-                      <p className="text-sm text-muted-foreground">
-                        Urgent campaign notifications
-                      </p>
+                  {/* <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Push Notifications</h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">
+                            Push Notifications
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Enable all push notifications
+                          </p>
+                        </div>
+                        <Switch
+                          checked={notificationSettings.push_notification}
+                          onCheckedChange={(checked) =>
+                            handleNotificationToggle(
+                              "push_notification",
+                              checked
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">
+                            Campaign Updates
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Urgent campaign notifications
+                          </p>
+                        </div>
+                        <Switch
+                          checked={notificationSettings.push_campaign_update}
+                          onCheckedChange={(checked) =>
+                            handleNotificationToggle(
+                              "push_campaign_update",
+                              checked
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Donation Alerts</p>
+                          <p className="text-sm text-muted-foreground">
+                            Large donation notifications
+                          </p>
+                        </div>
+                        <Switch
+                          checked={notificationSettings.push_donation_alert}
+                          onCheckedChange={(checked) =>
+                            handleNotificationToggle(
+                              "push_donation_alert",
+                              checked
+                            )
+                          }
+                        />
+                      </div>
                     </div>
-                    <Switch
-                      checked={notifications.pushCampaigns}
-                      onCheckedChange={(checked) =>
-                        handleNotificationUpdate("pushCampaigns", checked)
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Large Donations</p>
-                      <p className="text-sm text-muted-foreground">
-                        Donations over $500
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notifications.pushDonations}
-                      onCheckedChange={(checked) =>
-                        handleNotificationUpdate("pushDonations", checked)
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">System Alerts</p>
-                      <p className="text-sm text-muted-foreground">
-                        Important system notifications
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notifications.pushReports}
-                      onCheckedChange={(checked) =>
-                        handleNotificationUpdate("pushReports", checked)
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
+                  </div> */}
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

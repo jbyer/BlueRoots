@@ -110,7 +110,9 @@ export default function FundraisersPage() {
 
   console.log("Current campaigns:", currentCampaigns);
   
-
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterType, sortBy]);
 
 
   return (
