@@ -23,7 +23,6 @@ import { CampaignEditModal } from "./admin-edit-campanign";
 import { getUserData } from "@/lib/auth";
 import toast, { Toaster } from "react-hot-toast";
 
-
 interface Campaign {
   id: number;
   title: string;
@@ -46,20 +45,17 @@ export default function AdminCampaignList() {
   const [campaignToDelete, setCampaignToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
-  const [user, setUser] = useState(null);
-  const email = user?.email || "";
-
-  useEffect(() => {
-    setUser(getUserData());
-  }, []);
 
   const fetchCampaigns = async () => {
+    const user = getUserData();
+    if (!user?.email) return;
+    console.log("The user email", user?.email);
+
     try {
       setLoading(true);
-      const response = await api.get(`/api/v1/all_campaign/${email}`);
+      const response = await api.get(`/api/v1/all_campaign/${user?.email}`);
       setCampaigns(response?.campaigns);
       console.log("Fetched campaigns:", response?.campaigns);
-      
     } catch (err: any) {
       setError(err.message || "Failed to fetch campaigns");
       console.error("Error fetching campaigns:", err);

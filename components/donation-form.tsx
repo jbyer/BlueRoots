@@ -25,7 +25,7 @@ interface DonationFormProps {
 
 export default function DonationForm({
   selectedParty = "all",
-  selectedCampaign = "",
+  selectedCampaign,
 }: DonationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCustomAmount, setShowCustomAmount] = useState(false);
@@ -55,7 +55,7 @@ export default function DonationForm({
     success: false,
     message: "",
   });
-
+  console.log("Campaign Id", selectedCampaign);
   const handleInputChange = (name: string, value: any) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -158,11 +158,10 @@ export default function DonationForm({
 
     setIsSubmitting(true);
     console.log("Submitting donation with data:", formData);
-    
 
     try {
       const donationData = {
-        campaignId: selectedCampaign ? parseInt(selectedCampaign) : null,
+        campaignId: selectedCampaign,
         amount:
           formData.donationAmount === "custom"
             ? parseFloat(formData.customAmount)
@@ -182,12 +181,10 @@ export default function DonationForm({
         occupation: formData.occupation,
         employer: formData.employer,
         cause: formData.causes[0] || "General Fund",
-        recurring: formData.recurring,
       };
+      console.log("Donation data to send:", donationData);
 
       const response = await api.post("/api/v1/donate", donationData);
-
-      console.log("Donation response:", response);
 
       setApiResponse({
         success: true,
@@ -661,41 +658,23 @@ export default function DonationForm({
               <label className="block text-sm font-medium mb-1">
                 Expiry Year *
               </label>
-              <Select
-                onValueChange={(value) =>
-                  handleInputChange("expiryYear", value)
-                }
+              <Input
+                type="number"
+                placeholder="123"
+                maxLength={2}
                 value={formData.expiryYear}
-              >
-                <SelectTrigger
-                  className={errors.expiryYear ? "border-red-500" : ""}
-                >
-                  <SelectValue placeholder="YYYY" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from(
-                    { length: new Date().getFullYear() - 1990 + 1 },
-                    (_, i) => {
-                      const year = 1990 + i;
-                      return (
-                        <SelectItem key={year} value={year.toString()}>
-                          {year}
-                        </SelectItem>
-                      );
-                    }
-                  )}
-                </SelectContent>
-              </Select>
-              {errors.expiryYear && (
-                <p className="mt-1 text-sm text-red-600">{errors.expiryYear}</p>
-              )}
+                onChange={(e) =>
+                  handleInputChange("expiryYear", e.target.value)
+                }
+                className={errors.cvv ? "border-red-500" : ""}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">CVV *</label>
               <Input
                 type="password"
                 placeholder="123"
-                maxLength={4}
+                maxLength={3}
                 value={formData.cvv}
                 onChange={(e) => handleInputChange("cvv", e.target.value)}
                 className={errors.cvv ? "border-red-500" : ""}

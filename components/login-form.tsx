@@ -123,7 +123,7 @@ export default function LoginForm({ mode }: LoginFormProps) {
           ux_mode="popup"
         />
 
-        <div className="relative">
+        {/* <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
@@ -132,8 +132,8 @@ export default function LoginForm({ mode }: LoginFormProps) {
               Or continue with
             </span>
           </div>
-        </div>
-
+        </div> */}
+        {/* 
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (
             <div className="grid grid-cols-2 gap-4">
@@ -276,7 +276,7 @@ export default function LoginForm({ mode }: LoginFormProps) {
               <span>{mode === "signin" ? "Sign in" : "Create account"}</span>
             )}
           </Button>
-        </form>
+        </form> */}
       </div>
     </GoogleOAuthProvider>
   );

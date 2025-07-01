@@ -12,6 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import api from "@/utils/api";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 
 interface Campaign {
   id: number;
@@ -35,6 +39,23 @@ export default function CampaignList({
   campaigns,
   loading,
 }: CampaignListProps) {
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
+    null
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const handleLearnMore = async (campaignId: number) => {
+    setIsLoading(true);
+    try {
+      const response = await api.get(`/api/v1/single_campaign/${campaignId}`);
+      setSelectedCampaign(response.campaign);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Failed to fetch campaign details:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   if (campaigns.length === 0) {
     return (
       <div className="text-center py-12">
@@ -94,8 +115,17 @@ export default function CampaignList({
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button asChild variant="outline" className="btn-secondary">
-              <Link href={`/fundraisers/${campaign.id}`}>Learn More</Link>
+            <Button
+              variant="outline"
+              className="btn-secondary"
+              onClick={() => handleLearnMore(campaign.id)}
+              disabled={isLoading}
+            >
+              {isLoading && selectedCampaign?.id === campaign.id ? (
+                <span>Loading...</span>
+              ) : (
+                <span>Learn More</span>
+              )}
             </Button>
             <Button
               asChild
@@ -106,6 +136,98 @@ export default function CampaignList({
           </CardFooter>
         </Card>
       ))}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[625px]">
+          {selectedCampaign && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selectedCampaign.title}</DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div className="relative h-64 w-full rounded-lg overflow-hidden">
+                  <Image
+                    src={selectedCampaign.photo || "/placeholder.svg"}
+                    alt={selectedCampaign.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+
+                <div>
+                  <h4 className="font-medium mb-2">Description</h4>
+                  <p className="text-sm text-gray-600">
+                    {selectedCampaign.description}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Status</h4>
+                    <Badge
+                      variant={
+                        selectedCampaign.status === "urgent"
+                          ? "destructive"
+                          : "default"
+                      }
+                    >
+                      {selectedCampaign.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Supporters</h4>
+                    <p>{selectedCampaign.supporter}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium">
+                      ${selectedCampaign.amount_donated.toLocaleString()} raised
+                    </span>
+                    <span className="text-gray-500">
+                      ${selectedCampaign.goal.toLocaleString()} goal
+                    </span>
+                  </div>
+                  <Progress
+                    value={
+                      (selectedCampaign.amount_donated /
+                        selectedCampaign.goal) *
+                      100
+                    }
+                    className="h-2 bg-gray-100 text-blue-600"
+                  />
+                  <p className="text-xs text-gray-500 text-right">
+                    {Math.round(
+                      (selectedCampaign.amount_donated /
+                        selectedCampaign.goal) *
+                        100
+                    )}
+                    % of goal reached
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    asChild
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Link href={`/donate?campaign=${selectedCampaign.id}`}>
+                      Donate Now
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

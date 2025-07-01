@@ -15,6 +15,14 @@ import {
 import { useEffect, useState } from "react";
 import api from "@/utils/api";
 import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from "./ui/badge";
+
 
 interface Campaign {
   id: number;
@@ -95,6 +103,10 @@ export default function FeaturedCauses() {
   const [causes, setCauses] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [selectedCause, setSelectedCause] = useState<Campaign | null>(null);
+
 
   useEffect(() => {
     const fetchCauses = async () => {
@@ -112,6 +124,19 @@ export default function FeaturedCauses() {
 
     fetchCauses();
   }, []);
+
+  const handleLearnMore = async (campaignId: number) => {
+    setIsLoadingDetails(true);
+    try {
+      const response = await api.get(`/api/v1/single_campaign/${campaignId}`);
+      setSelectedCause(response.campaign);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Failed to fetch campaign details:", error);
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -155,100 +180,198 @@ export default function FeaturedCauses() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {causes.map((cause) => {
-        const causeType = getCauseType(cause.title);
-        const IconComponent = causeIcons[causeType] || causeIcons.Default;
-        const progressPercentage = (cause.amount_donated / cause.goal) * 100;
-        const urgency = cause?.status;
-        const supporters = cause.supporter;
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {causes.map((cause) => {
+          const causeType = getCauseType(cause.title);
+          const IconComponent = causeIcons[causeType] || causeIcons.Default;
+          const progressPercentage = (cause.amount_donated / cause.goal) * 100;
+          const urgency = cause?.status;
+          const supporters = cause.supporter;
 
-        return (
-          <Card
-            key={cause.id}
-            className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-          >
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {/* Icon and Urgency Badge */}
-                <div className="flex items-center justify-between">
-                  <div
-                    className={`w-12 h-12 bg-gradient-to-r ${
-                      causeColors[causeType] || causeColors.Default
-                    } rounded-lg flex items-center justify-center`}
-                  >
-                    <IconComponent className="h-6 w-6 text-white" />
+          return (
+            <Card
+              key={cause.id}
+              className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            >
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {/* Icon and Urgency Badge */}
+                  <div className="flex items-center justify-between">
+                    <div
+                      className={`w-12 h-12 bg-gradient-to-r ${
+                        causeColors[causeType] || causeColors.Default
+                      } rounded-lg flex items-center justify-center`}
+                    >
+                      <IconComponent className="h-6 w-6 text-white" />
+                    </div>
+                    <span
+                      className={`text-xs font-medium px-2 py-1 rounded-full ${getUrgencyColor(
+                        urgency
+                      )}`}
+                    >
+                      {cause.status.charAt(0).toUpperCase() +
+                        cause.status.slice(1)}
+                    </span>
                   </div>
-                  <span
-                    className={`text-xs font-medium px-2 py-1 rounded-full ${getUrgencyColor(
-                      urgency
-                    )}`}
-                  >
-                    {cause.status.charAt(0).toUpperCase() +
-                      cause.status.slice(1)}
-                  </span>
+
+                  {/* Title and Description */}
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      {cause.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {cause.description}
+                    </p>
+                  </div>
+
+                  {/* Progress Section */}
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-gray-600">Progress</span>
+                        <span className="font-medium">
+                          ${cause.amount_donated.toLocaleString()} of $
+                          {cause.goal.toLocaleString()}
+                        </span>
+                      </div>
+                      <Progress value={progressPercentage} className="h-2" />
+                      <div className="text-right text-xs text-gray-500 mt-1">
+                        {Math.round(progressPercentage)}% funded
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-1" />
+                        {supporters.toLocaleString()} supporters
+                      </div>
+                      <div className="flex items-center">
+                        <DollarSign className="h-4 w-4 mr-1" />
+                        {supporters > 0
+                          ? Math.round(
+                              cause.amount_donated / supporters
+                            ).toLocaleString()
+                          : "0"}{" "}
+                        avg
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <Link href={`/donate?campaign=${cause.id}`}>
+                      <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm">
+                        Donate
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-sm"
+                      onClick={() => handleLearnMore(cause.id)}
+                      disabled={isLoadingDetails}
+                    >
+                      {isLoadingDetails && selectedCause?.id === cause.id
+                        ? "Loading..."
+                        : "Learn More"}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Campaign Details Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[625px]">
+          {selectedCause && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selectedCause.title}</DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div className="relative h-64 w-full rounded-lg overflow-hidden">
+                  <img
+                    src={selectedCause.photo || "/placeholder.svg"}
+                    alt={selectedCause.title}
+                    className="object-cover w-full h-full"
+                  />
                 </div>
 
-                {/* Title and Description */}
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    {cause.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {cause.description}
+                  <h4 className="font-medium mb-2">Description</h4>
+                  <p className="text-sm text-gray-600">
+                    {selectedCause.description}
                   </p>
                 </div>
 
-                {/* Progress Section */}
-                <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-gray-600">Progress</span>
-                      <span className="font-medium">
-                        ${cause.amount_donated.toLocaleString()} of $
-                        {cause.goal.toLocaleString()}
-                      </span>
-                    </div>
-                    <Progress value={progressPercentage} className="h-2" />
-                    <div className="text-right text-xs text-gray-500 mt-1">
-                      {Math.round(progressPercentage)}% funded
-                    </div>
+                    <h4 className="font-medium mb-2">Status</h4>
+                    <Badge
+                      variant={
+                        selectedCause.status === "urgent"
+                          ? "destructive"
+                          : "default"
+                      }
+                    >
+                      {selectedCause.status}
+                    </Badge>
                   </div>
-
-                  {/* Stats */}
-                  <div className="flex items-center justify-between text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-1" />
-                      {supporters.toLocaleString()} supporters
-                    </div>
-                    <div className="flex items-center">
-                      <DollarSign className="h-4 w-4 mr-1" />
-                      {supporters > 0
-                        ? Math.round(
-                            cause.amount_donated / supporters
-                          ).toLocaleString()
-                        : "0"}{" "}
-                      avg
-                    </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Supporters</h4>
+                    <p>{selectedCause.supporter}</p>
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
-                  <Link href={`/donate`}>
-                    <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm">
-                      Donate Cause
-                    </Button>
-                  </Link>
-                  <Button variant="outline" className="flex-1 text-sm">
-                    Learn More
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium">
+                      ${selectedCause.amount_donated.toLocaleString()} raised
+                    </span>
+                    <span className="text-gray-500">
+                      ${selectedCause.goal.toLocaleString()} goal
+                    </span>
+                  </div>
+                  <Progress
+                    value={
+                      (selectedCause.amount_donated / selectedCause.goal) * 100
+                    }
+                    className="h-2 bg-gray-100 text-blue-600"
+                  />
+                  <p className="text-xs text-gray-500 text-right">
+                    {Math.round(
+                      (selectedCause.amount_donated / selectedCause.goal) * 100
+                    )}
+                    % of goal reached
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    asChild
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Link href={`/donate?campaign=${selectedCause.id}`}>
+                      Donate Now
+                    </Link>
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
