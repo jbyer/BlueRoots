@@ -1,3 +1,4 @@
+"use client"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { useState } from "react"
@@ -7,11 +8,12 @@ import { ChevronLeft } from "lucide-react"
 import CampaignCreateForm from "@/components/admin/campaign-create-form"
 import CampaignCreateForm501c3 from "@/components/admin/campaign-create-form-501c3"
 import CampaignCreateForm501c4 from "@/components/admin/campaign-create-form-501c4" 
+import PoliticalCampaignCreateForm from "@/components/admin/political-campaign-create-form"
 
-export const metadata: Metadata = {
-  title: "Create Campaign - BlueRoot",
-  description: "Create a new fundraising campaign",
-}
+// export const metadata: Metadata = {
+//   title: "Create Campaign - BlueRoot",
+//   description: "Create a new fundraising campaign",
+// }
 
 const options = [
   {
@@ -44,32 +46,41 @@ export default function CreateCampaignPage() {
           </Link>
         </Button>
         <h1 className="text-3xl font-bold">Create a New Campaign</h1>
-        <p className="text-gray-600">Fill out the form below to create your fundraising campaign</p>
+        <p className="text-gray-600">
+          Fill out the form below to create your fundraising campaign
+        </p>
       </div>
 
       {selectedOption ? (
         <Card className="p-6">
-          {selectedOption === '501(c)(4)' ? (
+          {selectedOption === "501(c)(4)" ? (
             <CampaignCreateForm501c4 />
-          ) : selectedOption === '501(c)(3)' ? (
-            <CampaignCreateForm501c4 />
+          ) : selectedOption === "501(c)(3)" ? (
+            <CampaignCreateForm501c3 />
+          ) : selectedOption === "Other political organization" ? (
+            <PoliticalCampaignCreateForm />
           ) : (
             <CampaignCreateForm />
           )}
         </Card>
       ) : (
-      <div className="grid gap-6 md:grid-cols-2">
-        {options.map((option) => (
-          <Card key={option.title} className="p-6 flex flex-col justify-between">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">{option.title}</h2>
-              <p className="text-gray-600 mb-4">{option.description}</p>
-            </div>
-            <Button onClick={() => setSelectedOption(option.title)}>Start</Button>
-          </Card>
-        ))}
-      </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          {options.map((option) => (
+            <Card
+              key={option.title}
+              className="p-6 flex flex-col justify-between"
+            >
+              <div>
+                <h2 className="text-xl font-semibold mb-2">{option.title}</h2>
+                <p className="text-gray-600 mb-4">{option.description}</p>
+              </div>
+              <Button onClick={() => setSelectedOption(option.title)}>
+                Start
+              </Button>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
-  )
+  );
 }

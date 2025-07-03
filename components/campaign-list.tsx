@@ -14,8 +14,12 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import api from "@/utils/api";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Campaign {
   id: number;
@@ -28,6 +32,8 @@ interface Campaign {
   email: string;
   createdAt: string;
   updatedAt: string;
+  organization_name: string;
+  mission_statement: string;
 }
 
 interface CampaignListProps {
@@ -82,13 +88,28 @@ export default function CampaignList({
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle>{campaign.title}</CardTitle>
-                <CardDescription>{campaign.description}</CardDescription>
+                <CardTitle>
+                  {campaign.title}
+                  {campaign.organization_name}
+                </CardTitle>
+                <CardDescription>
+                  {campaign.description}
+                  {campaign.mission_statement}
+                </CardDescription>
               </div>
               <Badge variant="outline">
-                {campaign.title.includes("for")
+                {!campaign.title
+                  ? "Cause"
+                  : campaign.title.includes("for")
                   ? "Candidate"
                   : campaign.title.includes("Committee")
+                  ? "Committee"
+                  : "Cause"}
+                {!campaign.organization_name
+                  ? "Cause"
+                  : campaign.organization_name.includes("for")
+                  ? "Candidate"
+                  : campaign.organization_name.includes("Committee")
                   ? "Committee"
                   : "Cause"}
               </Badge>
@@ -141,7 +162,9 @@ export default function CampaignList({
           {selectedCampaign && (
             <>
               <DialogHeader>
-                <DialogTitle>{selectedCampaign.title}</DialogTitle>
+                <DialogTitle>
+                  {selectedCampaign.title} {selectedCampaign.organization_name}
+                </DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4">
@@ -157,7 +180,8 @@ export default function CampaignList({
                 <div>
                   <h4 className="font-medium mb-2">Description</h4>
                   <p className="text-sm text-gray-600">
-                    {selectedCampaign.description}
+                    {selectedCampaign.description}{" "}
+                    {selectedCampaign.mission_statement}
                   </p>
                 </div>
 

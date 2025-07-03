@@ -20,7 +20,7 @@ const statusOptions = [
   { value: "high", label: "High" },
 ];
 
-export default function CampaignCreateForm() {
+export default function PoliticalCampaignCreateForm() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("edit");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,7 +73,7 @@ export default function CampaignCreateForm() {
         photo: formData.photo || "campaign.png", // Default image if none provided
         email,
         status: formData.status,
-        campaign_type: "candidate",
+        campaign_type: "political_organization",
       };
 
       // Make API call
