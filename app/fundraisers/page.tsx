@@ -26,6 +26,8 @@ interface Campaign {
   email: string;
   createdAt: string;
   updatedAt: string;
+  organization_name: string;
+  mission_statement: string;
 }
 
 export default function FundraisersPage() {
@@ -58,19 +60,32 @@ export default function FundraisersPage() {
 
   // Filter and sort campaigns
   const filteredCampaigns = campaigns
-    .filter((campaign) => {
-      const matchesSearch =
-        campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        campaign.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType =
-        filterType === "all" ||
-        (filterType === "candidates" && campaign.title.includes("for")) ||
-        (filterType === "committees" && campaign.title.includes("Committee")) ||
-        (filterType === "causes" &&
-          !campaign.title.includes("for") &&
-          !campaign.title.includes("Committee"));
-      return matchesSearch && matchesType;
-    })
+  .filter((campaign) => {
+    const title = campaign.title || "";
+    const description = campaign.description || "";
+    const orgName = campaign.organization_name || "";
+    const mission = campaign.mission_statement || "";
+
+    const matchesSearch =
+      title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      orgName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mission.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesType =
+      filterType === "all" ||
+      (filterType === "candidates" && 
+        (title.includes("for") || orgName.includes("for"))) ||
+      (filterType === "committees" && 
+        (orgName.includes("Committee") || title.includes("Committee"))) ||
+      (filterType === "causes" &&
+        !title.includes("for") &&
+        !title.includes("Committee") &&
+        !orgName.includes("for") &&
+        !orgName.includes("Committee"));
+
+    return matchesSearch && matchesType;
+  })
     .sort((a, b) => {
       if (sortBy === "recent")
         return (
@@ -109,11 +124,10 @@ export default function FundraisersPage() {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   console.log("Current campaigns:", currentCampaigns);
-  
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterType, sortBy]);
-
 
   return (
     <div className="container mx-auto px-4 py-12">

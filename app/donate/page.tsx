@@ -32,6 +32,8 @@ interface Campaign {
   supporter: number;
   createdAt: string;
   updatedAt: string;
+  organization_name: string;
+  mission_statement: string;
 }
 
 export default function DonatePage() {
@@ -186,10 +188,10 @@ export default function DonatePage() {
                         value={campaign.id.toString()}
                       >
                         <div className="flex flex-col items-start w-full">
-                          <span className="font-medium">{campaign.title}</span>
+                          <span className="font-medium">{campaign.title} {campaign.organization_name }</span>
 
                           <span className="text-xs text-muted-foreground truncate w-full">
-                            {campaign.description}
+                            {campaign.description} {campaign.mission_statement}
                           </span>
                         </div>
                       </SelectItem>
@@ -201,10 +203,10 @@ export default function DonatePage() {
               {selectedCampaignData && (
                 <div className="p-4 bg-democratic-50 border border-democratic-200 rounded-lg">
                   <h4 className="font-semibold text-democratic-800 mb-2">
-                    {selectedCampaignData.title}
+                    {selectedCampaignData.title} {selectedCampaignData.organization_name}
                   </h4>
                   <p className="text-sm text-democratic-700">
-                    {selectedCampaignData.description}
+                    {selectedCampaignData.description} {selectedCampaignData.mission_statement}
                   </p>
                   <div className="mt-3 flex items-center gap-4 text-xs text-democratic-600">
                     <span className="px-2 py-1 bg-democratic-100 rounded-full capitalize">

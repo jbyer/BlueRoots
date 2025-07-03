@@ -183,7 +183,9 @@ export default function FeaturedCauses() {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {causes.map((cause) => {
-          const causeType = getCauseType(cause.title);
+          const causeType = getCauseType(
+            cause.title || cause.organization_name
+          );
           const IconComponent = causeIcons[causeType] || causeIcons.Default;
           const progressPercentage = (cause.amount_donated / cause.goal) * 100;
           const urgency = cause?.status;
@@ -218,10 +220,10 @@ export default function FeaturedCauses() {
                   {/* Title and Description */}
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {cause.title}
+                      {cause.title} {cause.organization_name}
                     </h3>
                     <p className="text-gray-600 text-sm leading-relaxed">
-                      {cause.description}
+                      {cause.description} {cause.mission_statement}
                     </p>
                   </div>
 
@@ -290,7 +292,9 @@ export default function FeaturedCauses() {
           {selectedCause && (
             <>
               <DialogHeader>
-                <DialogTitle>{selectedCause.title}</DialogTitle>
+                <DialogTitle>
+                  {selectedCause.title} {selectedCause.organization_name}
+                </DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4">
@@ -306,6 +310,7 @@ export default function FeaturedCauses() {
                   <h4 className="font-medium mb-2">Description</h4>
                   <p className="text-sm text-gray-600">
                     {selectedCause.description}
+                    {selectedCause.mission_statement}
                   </p>
                 </div>
 

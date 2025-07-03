@@ -34,6 +34,7 @@ interface Campaign {
   email: string;
   createdAt: string;
   updatedAt: string;
+  organization_name: string;
 }
 
 export default function AdminCampaignList() {
@@ -181,7 +182,7 @@ export default function AdminCampaignList() {
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="text-xl font-bold">
-                            {campaign.title}
+                            {campaign.title} {campaign.organization_name}
                           </h3>
                           <Badge
                             className={
@@ -192,7 +193,7 @@ export default function AdminCampaignList() {
                           </Badge>
                         </div>
                         <p className="text-gray-600 mb-4">
-                          {campaign.description}
+                          {campaign.description} {campaign.mission_statement}
                         </p>
                       </div>
                       <div className="flex gap-2 mt-4 md:mt-0">
